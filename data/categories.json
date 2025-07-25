@@ -1,0 +1,38 @@
+[
+  [
+    "首页",
+    "home"
+  ],
+  [
+    "请求测试",
+    "request_test"
+  ],
+  [
+    "漏洞验证",
+    "vulnerability_test"
+  ],
+  [
+    "抓包劫持",
+    "packet_capture"
+  ],
+  [
+    "端口扫描",
+    "port_scan"
+  ],
+  [
+    "密码爆破",
+    "password_crack"
+  ],
+  [
+    "远程管理",
+    "remote_management"
+  ],
+  [
+    "安全工具",
+    "security_tools"
+  ],
+  [
+    "      软件说明",
+    "software_description"
+  ]
+]

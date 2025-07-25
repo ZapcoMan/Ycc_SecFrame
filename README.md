@@ -1,7 +1,13 @@
-# SecFrame 框架
-111
+# Ycc_SecFrame 框架
+
 这是一个基于PyQt5的工具套件，具有良好的扩展性和现代化的UI设计。
 当前只支持Windows系统，MAC与Linux系统未测试。
+
+或者点击https://github.com/Sgyling/Ycc_SecFrame/releases/tag/Ycc_SecFrame,进行下载
+
+下载过慢,请点击:https://pan.quark.cn/s/d4fc8d0c8706  进行下载
+
+
 
 ## 功能特点
 - 简洁美观的深色主题界面

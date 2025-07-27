@@ -1,7 +1,14 @@
 import sys
 import os
+import sys
 import json
 import time
+
+# 获取资源路径
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.dirname(os.path.dirname(__file__)), relative_path)
 # 尝试导入win32com.client用于解析Windows快捷方式
 try:
     import win32com.client
@@ -51,7 +58,7 @@ class DudeSuiteApp(QMainWindow):
         self.setGeometry(100, 100, 1000, 600)
         
         # 设置窗口图标
-        logo_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'Logo.png')
+        logo_path = resource_path('resources/Logo.png')
         if os.path.exists(logo_path):
             self.setWindowIcon(QIcon(logo_path))
         
@@ -116,6 +123,12 @@ class DudeSuiteApp(QMainWindow):
         # 标题栏标题
         title_label = QLabel('Ycc_SecFrame 框架')
         title_label.setStyleSheet('font-size: 14px; font-weight: bold; color: #4da6ff;')
+        title_label.setAlignment(Qt.AlignCenter)  # 确保标题文本水平和垂直居中
+
+        # 创建一个水平布局来放置标题，确保它居中对齐
+        logo_title_layout = QHBoxLayout()
+        logo_title_layout.setAlignment(Qt.AlignCenter)
+        logo_title_layout.addWidget(title_label)
 
         # 标题栏按钮
         close_btn = QPushButton('×')
@@ -148,9 +161,10 @@ class DudeSuiteApp(QMainWindow):
         ''')
         minimize_btn.clicked.connect(self.showMinimized)
 
-        # 添加到标题栏布局
-        title_bar_layout.addWidget(title_label)
-        title_bar_layout.addStretch()
+        # 添加到标题栏布局 - 前后添加伸缩项使Logo和标题水平居中
+        title_bar_layout.addStretch(1)
+        title_bar_layout.addLayout(logo_title_layout)
+        title_bar_layout.addStretch(1)
         title_bar_layout.addWidget(minimize_btn)
         title_bar_layout.addWidget(close_btn)
 
@@ -279,13 +293,16 @@ class DudeSuiteApp(QMainWindow):
         self.nav_menu.setDragEnabled(True)
         self.nav_menu.setAcceptDrops(True)
         self.nav_menu.setDropIndicatorShown(True)
-        self.nav_menu.setDragDropMode(QListWidget.InternalMove)
+        self.nav_menu.setDragDropMode(QListWidget.DragDrop)
         # 安装事件过滤器来处理拖放事件
         self.nav_menu.installEventFilter(self)
         
         # 启用右键菜单
         self.nav_menu.setContextMenuPolicy(Qt.CustomContextMenu)
         self.nav_menu.customContextMenuRequested.connect(self.show_context_menu)
+        
+        # 确保导航菜单接受拖放
+        self.nav_menu.setAcceptDrops(True)
         
         # 初始化快捷方式数据
         self.shortcuts = {}  # 存储分类ID到快捷方式列表的映射
@@ -329,17 +346,19 @@ class DudeSuiteApp(QMainWindow):
 
         # 创建软件说明页面
         description_widget = QWidget()
-        description_widget.setStyleSheet('background-color: transparent;')
+        description_widget.setStyleSheet('background-color: #1a1a1a; border-radius: 10px;')
         description_layout = QVBoxLayout(description_widget)
         description_layout.setContentsMargins(50, 30, 50, 30)
 
         # 添加标题
         title_label = QLabel('软件说明')
         title_label.setStyleSheet('''
-            font-size: 24px;
+            font-size: 28px; 
             font-weight: bold;
             color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #4da6ff, stop:1 #0077ff);
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(77, 166, 255, 0.3);
         ''')
         title_label.setAlignment(Qt.AlignCenter)
         description_layout.addWidget(title_label)
@@ -358,69 +377,206 @@ class DudeSuiteApp(QMainWindow):
 
         # 添加软件说明内容
         # 项目简介
-        section_label = QLabel('### 项目简介')
-        section_label.setStyleSheet('font-size: 18px; font-weight: bold; color: #4da6ff; margin-top: 15px;')
+        section_label = QLabel('📋 项目简介')
+        section_label.setStyleSheet('font-size: 20px; font-weight: bold; color: #4da6ff; margin-top: 20px;')
         content_layout.addWidget(section_label)
 
+        content_frame = QFrame()
+        content_frame.setStyleSheet('background-color: #252525; border-radius: 8px; padding: 15px;')
+        content_frame_layout = QVBoxLayout(content_frame)
+        
         content_label = QLabel('Ycc_SecFrame 框架是一个可以集成多种工具的管理平台，旨在提供便捷的安全测试和工具管理功能。通过本平台，用户可以轻松添加、组织和启动各种安全工具，提高工作效率。')
-        content_label.setStyleSheet('font-size: 14px; color: #ddd;')
+        content_label.setStyleSheet('font-size: 14px; color: #ddd; line-height: 1.6;')
         content_label.setWordWrap(True)
-        content_layout.addWidget(content_label)
+        content_frame_layout.addWidget(content_label)
+        
+        content_layout.addWidget(content_frame)
 
-        # 主要功能
-        section_label = QLabel('### 主要功能')
-        section_label.setStyleSheet('font-size: 18px; font-weight: bold; color: #4da6ff; margin-top: 15px;')
+        # 软件信息
+        section_label = QLabel('📝 软件信息')
+        section_label.setStyleSheet('font-size: 20px; font-weight: bold; color: #4da6ff; margin-top: 20px;')
         content_layout.addWidget(section_label)
+        
+        info_frame = QFrame()
+        info_frame.setStyleSheet('background-color: #252525; border-radius: 8px; padding: 15px;')
+        info_frame_layout = QVBoxLayout(info_frame)
+        info_frame_layout.setSpacing(10)
+        
+        software_info = [
+            ('🏷️ 软件名称', 'Ycc_SecFrame 框架'),
+            ('👨‍💻 开发者', '杨CC'),
+            ('🔢 版本号', '1.0.0.1'),
+            ('🔗 GitHub地址', 'https://github.com/Sgyling/Ycc_SecFrame'),
+            ('🌐 官网地址', 'https://Yancy77.cn')
+        ]
+        for icon, text in software_info:
+            info_layout = QHBoxLayout()
+            icon_label = QLabel(icon)
+            icon_label.setStyleSheet('font-size: 14px; color: #4da6ff; min-width: 80px;')
+            
+            if 'GitHub地址' in icon or '官网地址' in icon:
+                text_label = QLabel(f'<a href="{text}">{text}</a>')
+                text_label.setTextFormat(Qt.RichText)
+                text_label.setTextInteractionFlags(Qt.TextSelectableByMouse | Qt.TextBrowserInteraction)
+                text_label.setOpenExternalLinks(True)
+                text_label.setStyleSheet('font-size: 14px; color: #4da6ff; text-decoration: none;')
+            else:
+                text_label = QLabel(text)
+                text_label.setStyleSheet('font-size: 14px; color: #ddd;')
+            
+            info_layout.addWidget(icon_label)
+            info_layout.addWidget(text_label)
+            info_frame_layout.addLayout(info_layout)
+        
+        content_layout.addWidget(info_frame)
+        
+        # 添加Logo
+        logo_frame = QFrame()
+        logo_frame.setStyleSheet('background-color: #252525; border-radius: 8px; padding: 20px; margin-top: 15px;')
+        logo_frame_layout = QHBoxLayout(logo_frame)
+        logo_frame_layout.setAlignment(Qt.AlignCenter)
+        
+        logo_label = QLabel()
+        logo_path = resource_path('resources/Logo.png')
+        if os.path.exists(logo_path):
+            pixmap = QPixmap(logo_path).scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            logo_label.setPixmap(pixmap)
+        
+        logo_frame_layout.addWidget(logo_label)
+        content_layout.addWidget(logo_frame)
+        
+        # 主要功能
+        section_label = QLabel('🚀 主要功能')
+        section_label.setStyleSheet('font-size: 20px; font-weight: bold; color: #4da6ff; margin-top: 20px;')
+        content_layout.addWidget(section_label)
+
+        features_frame = QFrame()
+        features_frame.setStyleSheet('background-color: #252525; border-radius: 8px; padding: 15px;')
+        features_frame_layout = QVBoxLayout(features_frame)
+        features_frame_layout.setSpacing(10)
 
         features = [
-            '- 请求测试: 对目标URL发送各种HTTP请求，测试其响应',
-            '- 漏洞验证: 验证目标系统是否存在特定漏洞',
-            '- 抓包劫持: 捕获和分析网络数据包',
-            '- 端口扫描: 扫描目标主机开放的端口',
-            '- 密码爆破: 尝试破解密码保护的系统或服务',
-            '- 远程管理: 远程连接和管理目标系统',
-            '- 安全工具: 集成各种实用的安全工具'
+            ('🔍 请求测试', '对目标URL发送各种HTTP请求，测试其响应'),
+            ('⚠️ 漏洞验证', '验证目标系统是否存在特定漏洞'),
+            ('📡 抓包劫持', '捕获和分析网络数据包'),
+            ('🔌 端口扫描', '扫描目标主机开放的端口'),
+            ('🔑 密码爆破', '尝试破解密码保护的系统或服务'),
+            ('🖥️ 远程管理', '远程连接和管理目标系统'),
+            ('🧰 安全工具', '集成各种实用的安全工具'),
+            ('🔒 核心原理', '其实这只是个框架,需要自己拖入应用')
         ]
-        for feature in features:
-            feature_label = QLabel(feature)
-            feature_label.setStyleSheet('font-size: 14px; color: #ddd;')
-            feature_label.setWordWrap(True)
-            content_layout.addWidget(feature_label)
+        for icon, text in features:
+            feature_layout = QHBoxLayout()
+            icon_label = QLabel(icon)
+            icon_label.setStyleSheet('font-size: 14px; color: #4da6ff; min-width: 80px;')
+            text_label = QLabel(text)
+            text_label.setStyleSheet('font-size: 14px; color: #ddd;')
+            text_label.setWordWrap(True)
+            feature_layout.addWidget(icon_label)
+            feature_layout.addWidget(text_label)
+            features_frame_layout.addLayout(feature_layout)
+        
+        content_layout.addWidget(features_frame)
 
         # 使用指南
-        section_label = QLabel('### 使用指南')
-        section_label.setStyleSheet('font-size: 18px; font-weight: bold; color: #4da6ff; margin-top: 15px;')
+        section_label = QLabel('📚 使用指南')
+        section_label.setStyleSheet('font-size: 20px; font-weight: bold; color: #4da6ff; margin-top: 20px;')
         content_layout.addWidget(section_label)
+
+        guides_frame = QFrame()
+        guides_frame.setStyleSheet('background-color: #252525; border-radius: 8px; padding: 15px;')
+        guides_frame_layout = QVBoxLayout(guides_frame)
+        guides_frame_layout.setSpacing(10)
 
         guides = [
-            '- 添加工具: 将工具快捷方式拖放到相应分类下',
-            '- 创建分类: 点击左侧导航栏顶部的"+"按钮添加新分类',
-            '- 重命名分类: 右键点击分类，选择"重命名分类"',
-            '- 删除分类: 右键点击分类，选择"删除分类"',
-            '- 启动工具: 点击工具图标启动相应工具'
+            ('➕ 添加工具', '将工具快捷方式拖放到相应分类下'),
+            ('📁 创建分类', '点击左侧导航栏顶部的"+"按钮添加新分类'),
+            ('✏️ 重命名分类', '右键点击分类，选择"重命名分类"'),
+            ('🗑️ 删除分类', '右键点击分类，选择"删除分类"'),
+            ('▶️ 启动工具', '点击工具图标启动相应工具')
         ]
-        for guide in guides:
-            guide_label = QLabel(guide)
-            guide_label.setStyleSheet('font-size: 14px; color: #ddd;')
-            guide_label.setWordWrap(True)
-            content_layout.addWidget(guide_label)
+        for icon, text in guides:
+            guide_layout = QHBoxLayout()
+            icon_label = QLabel(icon)
+            icon_label.setStyleSheet('font-size: 14px; color: #4da6ff; min-width: 80px;')
+            text_label = QLabel(text)
+            text_label.setStyleSheet('font-size: 14px; color: #ddd;')
+            text_label.setWordWrap(True)
+            guide_layout.addWidget(icon_label)
+            guide_layout.addWidget(text_label)
+            guides_frame_layout.addLayout(guide_layout)
+        
+        content_layout.addWidget(guides_frame)
 
         # 注意事项
-        section_label = QLabel('### 注意事项')
-        section_label.setStyleSheet('font-size: 18px; font-weight: bold; color: #4da6ff; margin-top: 15px;')
+        section_label = QLabel('⚠️ 注意事项')
+        section_label.setStyleSheet('font-size: 20px; font-weight: bold; color: #ff6b6b; margin-top: 20px;')
         content_layout.addWidget(section_label)
 
+        notes_frame = QFrame()
+        notes_frame.setStyleSheet('background-color: rgba(255, 107, 107, 0.1); border: 1px solid rgba(255, 107, 107, 0.3); border-radius: 8px; padding: 15px;')
+        notes_frame_layout = QVBoxLayout(notes_frame)
+        notes_frame_layout.setSpacing(10)
+
         notes = [
-            '- 本工具仅供安全测试和学习使用，请勿用于非法用途',
-            '- 使用前请确保您有权测试目标系统',
-            '- 软件说明分类无法重命名、删除和移动',
-            '- 右键点击工具可以删除工具'
+            ('🚨 法律声明', '本工具仅供安全测试和学习使用，请勿用于非法用途'),
+            ('🔒 权限要求', '使用前请确保您有权测试目标系统'),
+            ('📌 分类限制', '软件说明分类无法重命名、删除和移动'),
+            ('🗑️ 工具管理', '右键点击工具可以删除工具')
         ]
-        for note in notes:
-            note_label = QLabel(note)
-            note_label.setStyleSheet('font-size: 14px; color: #ddd;')
-            note_label.setWordWrap(True)
-            content_layout.addWidget(note_label)
+        for icon, text in notes:
+            note_layout = QHBoxLayout()
+            icon_label = QLabel(icon)
+            icon_label.setStyleSheet('font-size: 14px; color: #ff6b6b; min-width: 80px;')
+            text_label = QLabel(text)
+            text_label.setStyleSheet('font-size: 14px; color: #ddd;')
+            text_label.setWordWrap(True)
+            note_layout.addWidget(icon_label)
+            note_layout.addWidget(text_label)
+            notes_frame_layout.addLayout(note_layout)
+        
+        content_layout.addWidget(notes_frame)
+
+        # 支持开发者
+        section_label = QLabel('### 支持开发者')
+        section_label.setStyleSheet('font-size: 18px; font-weight: bold; color: #4da6ff; margin-top: 15px;')
+        content_layout.addWidget(section_label)
+        
+        # 创建二维码容器
+        qr_container = QWidget()
+        qr_layout = QHBoxLayout(qr_container)
+        qr_layout.setAlignment(Qt.AlignCenter)
+        qr_layout.setSpacing(40)
+        
+        # 微信支付
+        wx_label = QLabel()
+        wx_path = resource_path('resources/wx.jpg')
+        if os.path.exists(wx_path):
+            pixmap = QPixmap(wx_path).scaled(300, 300, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            wx_label.setPixmap(pixmap)
+        wx_text = QLabel('微信支付')
+        wx_text.setStyleSheet('font-size: 14px; color: #ddd;')
+        wx_text.setAlignment(Qt.AlignCenter)
+        wx_vbox = QVBoxLayout()
+        wx_vbox.addWidget(wx_label)
+        wx_vbox.addWidget(wx_text)
+        qr_layout.addLayout(wx_vbox)
+        
+        # 支付宝支付
+        zfb_label = QLabel()
+        zfb_path = resource_path('resources/zfb.jpg')
+        if os.path.exists(zfb_path):
+            pixmap = QPixmap(zfb_path).scaled(300, 300, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            zfb_label.setPixmap(pixmap)
+        zfb_text = QLabel('支付宝支付')
+        zfb_text.setStyleSheet('font-size: 14px; color: #ddd;')
+        zfb_text.setAlignment(Qt.AlignCenter)
+        zfb_vbox = QVBoxLayout()
+        zfb_vbox.addWidget(zfb_label)
+        zfb_vbox.addWidget(zfb_text)
+        qr_layout.addLayout(zfb_vbox)
+        
+        content_layout.addWidget(qr_container)
 
         scroll_area.setWidget(content_widget)
         description_layout.addWidget(scroll_area, 1)
@@ -449,17 +605,34 @@ class DudeSuiteApp(QMainWindow):
         home_layout.setContentsMargins(50, 50, 50, 50)
 
         # 添加标题
-        title_label = QLabel('Ycc_SecFrame 框架')
-        title_label.setStyleSheet('''
+        # 添加标题
+        title_container = QWidget()
+        title_layout = QHBoxLayout(title_container)
+        title_layout.setAlignment(Qt.AlignCenter)
+        title_layout.setSpacing(15)
+
+        # 添加Logo
+        logo_label = QLabel()
+        logo_path = resource_path('resources/Logo.png')
+        if os.path.exists(logo_path):
+            pixmap = QPixmap(logo_path).scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            logo_label.setPixmap(pixmap)
+        title_layout.addWidget(logo_label)
+
+        # 添加标题文本
+        title_text_label = QLabel('Ycc_SecFrame 框架')
+        title_text_label.setStyleSheet('''
             font-size: 32px;
             font-weight: bold;
             color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #4da6ff, stop:1 #0077ff);
-            margin-bottom: 15px;
         ''')
-        title_label.setAlignment(Qt.AlignCenter)
+        title_layout.addWidget(title_text_label)
+
+        home_layout.addWidget(title_container)
+        title_container.setStyleSheet('margin-bottom: 15px;')
 
         # 添加版本信息
-        version_label = QLabel('Version 1.0.0.0 - 杨CC')
+        version_label = QLabel('Version 1.0.0.1 - 杨CC')
         version_label.setStyleSheet('font-size: 14px; color: #888; margin-bottom: 40px;')
         version_label.setAlignment(Qt.AlignCenter)
 
@@ -524,7 +697,6 @@ class DudeSuiteApp(QMainWindow):
         warning_label.setOpenExternalLinks(True)
 
         # 添加到布局
-        home_layout.addWidget(title_label)
         home_layout.addWidget(version_label)
         home_layout.addWidget(features_frame)
         home_layout.addWidget(warning_label)
@@ -669,20 +841,23 @@ class DudeSuiteApp(QMainWindow):
     def rename_category(self, item):
         # 获取当前分类名称和ID
         item_text = item.text()
-        # 移除图标（假设图标是第一个字符）和后面的两个空格
-        if len(item_text) > 3 and item_text[1:3] == '  ':
-            current_name = item_text[3:]
+        category_id = item.data(Qt.UserRole)
+        
+        # 获取分类对应的图标
+        icon = self.nav_icons.get(category_id, '')
+        
+        # 移除图标和后面的空格，获取当前名称
+        if icon and item_text.startswith(icon):
+            # 移除图标和后面的所有空格
+            current_name = item_text[len(icon):].lstrip()
         else:
             current_name = item_text
-        category_id = item.data(Qt.UserRole)
 
         # 弹出输入对话框
         new_name, ok = QInputDialog.getText(self, '重命名分类', '请输入新的分类名称:', text=current_name)
         if ok and new_name and new_name != current_name:
-            # 获取分类对应的图标
-            icon = self.nav_icons.get(category_id, '')
-            # 更新导航项文本
-            item.setText(f'{icon}  {new_name}')
+            # 更新导航项文本，确保图标和名称之间只有一个空格
+            item.setText(f'{icon} {new_name}')
 
             # 更新导航项数据
             for i, (name, id) in enumerate(self.nav_items):
@@ -718,8 +893,8 @@ class DudeSuiteApp(QMainWindow):
         self.save_categories()
 
     def dragEnterEvent(self, event):
-        # 检查拖入的数据是否是文本（假设快捷方式以文本形式表示）
-        if event.mimeData().hasText():
+        # 检查拖入的数据是否是文本或URL（快捷方式通常以这些形式表示）
+        if event.mimeData().hasText() or event.mimeData().hasUrls():
             event.acceptProposedAction()
         else:
             super().dragEnterEvent(event)
@@ -920,18 +1095,84 @@ class DudeSuiteApp(QMainWindow):
             if current_module_name:
                 self.show_module_page(current_module_name)
 
-    def dropEvent(self, event):
-        # 获取拖入的文本
-        if event.mimeData().hasText():
-            shortcut_text = event.mimeData().text()
-            
+    def eventFilter(self, source, event):
+        # 确保事件来自导航菜单
+        if source == self.nav_menu:
+            # 处理拖入事件
+            if event.type() == QEvent.DragEnter:
+                self.dragEnterEvent(event)
+                return True
+            # 处理拖移事件
+            elif event.type() == QEvent.DragMove:
+                self.dragMoveEvent(event)
+                return True
+            # 处理拖放事件
+            elif event.type() == QEvent.Drop:
+                self.dropEvent(event)
+                return True
+        # 对于其他事件，使用默认处理
+        return super().eventFilter(source, event)
+        
+    def dragEnterEvent(self, event):
+        # 检查拖入的数据类型
+        if event.mimeData().hasText() or event.mimeData().hasUrls():
             # 获取当前拖放位置的项
             item = self.nav_menu.itemAt(event.pos())
-            # 只允许拖放到用户创建的分类和预设的功能分类（除了排除项）
-            allowed_categories = ['request_test', 'vulnerability_test', 'packet_capture', 'port_scan', 'password_crack', 'remote_management', 'security_tools']
+            if item:
+                item_data = item.data(Qt.UserRole)
+                # 检查是否是排除的分类
+                excluded_categories = ['home', 'software_description', 'add_category']
+                
+                # 只有非排除的分类才允许拖放
+                if item_data not in excluded_categories:
+                    event.acceptProposedAction()
+                    return
+        event.ignore()
+        
+    def dragMoveEvent(self, event):
+        # 检查拖入的数据类型
+        if event.mimeData().hasText() or event.mimeData().hasUrls():
+            # 获取当前拖放位置的项
+            item = self.nav_menu.itemAt(event.pos())
+            if item:
+                item_data = item.data(Qt.UserRole)
+                # 检查是否是排除的分类
+                excluded_categories = ['home', 'software_description', 'add_category']
+                
+                # 只有非排除的分类才允许拖放
+                if item_data not in excluded_categories:
+                    event.acceptProposedAction()
+                    return
+        event.ignore()
+        
+    def dropEvent(self, event):
+        # 获取拖入的文本或URL
+        shortcut_text = None
+        if event.mimeData().hasText():
+            shortcut_text = event.mimeData().text()
+        elif event.mimeData().hasUrls():
+            # 取第一个URL
+            shortcut_text = event.mimeData().urls()[0].toString()
+            # 如果是本地文件URL，去掉file://前缀
+            if shortcut_text.startswith('file:///'):
+                shortcut_text = shortcut_text[8:]
+            elif shortcut_text.startswith('file://'):
+                shortcut_text = shortcut_text[7:]
+                # 对于Windows路径，确保路径格式正确
+                if shortcut_text.startswith('/'):
+                    shortcut_text = shortcut_text[1:]
+                shortcut_text = shortcut_text.replace('/', '\\')
+        
+        # 获取当前拖放位置的项
+        item = self.nav_menu.itemAt(event.pos())
+        if item and shortcut_text:
             item_data = item.data(Qt.UserRole)
-            if item and (item_data.startswith('category_') or item_data in allowed_categories):
-                category_id = item.data(Qt.UserRole)
+            # 检查是否是排除的分类（没有右键功能的分类）
+            excluded_categories = ['home', 'software_description', 'add_category']
+            
+            # 只有非排除的分类才允许拖放
+            if item_data not in excluded_categories:
+                category_id = item_data
                 
                 # 确保分类在快捷方式字典中存在
                 if category_id not in self.shortcuts:
@@ -944,6 +1185,7 @@ class DudeSuiteApp(QMainWindow):
                 self.save_shortcuts()
                 
                 # 显示成功消息
+                QMessageBox.information(self, '添加成功', f'已将快捷方式添加到分类: {item.text()}')
                 print(f'已将快捷方式添加到分类: {item.text()}')
         
         super().dropEvent(event)

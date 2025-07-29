@@ -2,6 +2,10 @@
 这是一个基于PyQt5的工具套件，具有良好的扩展性和现代化的UI设计。
 当前只支持Windows系统，MAC与Linux系统未测试。
 
+Windows下载链接：https://github.com/Sgyling/Ycc_SecFrame/releases/download/Ycc_SecFrame_V1.1.0.0/Ycc_SecFrame.exe
+
+下载过慢请访问:https://pan.quark.cn/s/58d104677a5f
+
 ## 功能特点
 - 简洁美观的深色主题界面
 - 左侧导航菜单，方便快速访问不同功能模块
